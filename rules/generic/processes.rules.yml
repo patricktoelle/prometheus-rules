@@ -1,0 +1,13 @@
+groups:
+- name: procs.rules
+  rules:
+  - alert: 'NodeProcsBlocked'
+    expr: 'node_procs_blocked > 10'
+    for: '5m'
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      'summary': 'High count of blocked processes on {{ $labels.instance }} detected'
+      'description': '{{ $labels.instance }} High count of blocked procs (current value is: {{ $value }})'

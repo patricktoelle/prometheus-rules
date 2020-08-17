@@ -1,0 +1,56 @@
+groups:
+- name: mysql.rules
+  rules:
+  - alert: MysqlDown
+    expr: mysql_up == 0
+    for: 10m
+    labels:
+      severity: critical
+      priority: P3
+      paging: true
+    annotations:
+      summary: 'MySQL is down: {{ $labels.job }} on {{ $labels.instance }}'
+      description: "{{ $labels.job }} on {{ $labels.instance }} is not reachable"
+  - alert: MySQLReplicationNotRunning
+    expr: mysql_slave_status_slave_io_running == 0 or mysql_slave_status_slave_sql_running
+      == 0
+    for: 2m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      description: Slave replication (IO or SQL) has been down for more than 2 minutes.
+      summary: Slave replication is not running
+  - alert: MySQLReplicationLag
+    expr: "(mysql_slave_lag_seconds > 30) and ON(instance) (predict_linear(mysql_slave_lag_seconds[5m],\
+      \ 60 * 2) > 0)"
+    for: 1m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      description: The mysql slave replication has fallen behind and is not recovering
+      summary: MySQL slave replication is lagging
+  - alert: MySQLInnoDBLogWaits
+    expr: rate(mysql_global_status_innodb_log_waits[15m]) > 10
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      description: The innodb logs are waiting for disk at a rate of {{$value}} /
+        second
+      summary: MySQL innodb log writes stalling
+  - alert: MySQLHandlerActivity
+    expr: rate(mysql_global_status_handlers_total[5m]) > 1e6
+    for: 30m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      description: MySQL handler {{ $labels.handler }} is doing many requests
+      summary: MySQL handler {{ $labels.handler }} is doing {{ $value}} request per
+        second, please check your indices / foreign keys

@@ -1,0 +1,90 @@
+groups:
+- name: elasticsearch.rules
+  rules:
+  # Exporter can not scrape elasticsearch
+  - alert: ElasticsearchExporterHealthy
+    expr: elasticsearch_cluster_health_up == 0
+    for: 10m
+    labels:
+      severity: critical
+      priority: P3
+      paging: true
+    annotations:
+      summary: elasticsearch_exporter cannot scrape ES
+      description: elasticsearch_exporter on {{ $labels.instance }} could not get
+        any data from Elasticsearch
+  - alert: ElasticsearchClusterHealthYellow
+    expr: max(elasticsearch_cluster_health_status{color="yellow"}) by (cluster) > 0
+    for: 5m
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: elasticsearch is yellow
+      description: elasticsearch cluster {{ $labels.cluster }} is in YELLOW state
+  - alert: ElasticsearchClusterHealthRed
+    expr: max(elasticsearch_cluster_health_status{color="red"}) by (cluster) > 0
+    for: 3m
+    labels:
+      severity: critical
+      priority: P2
+      paging: true
+    annotations:
+      summary: elasticsearch is red
+      description: elasticsearch cluster {{ $labels.cluster }} is in RED state
+  - alert: ElasticsearchClusterInitializingShards
+    expr: max(elasticsearch_cluster_health_initializing_shards) by (cluster) > 0
+    for: 15m
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: elasticsearch cluster has shards in initializing state
+      description: "{{ $value }} shards are currently initializing in cluster {{ $labels.cluster\
+        \ }}"
+  - alert: ElasticsearchClusterRelocatingShards
+    expr: max(elasticsearch_cluster_health_relocating_shards) by (cluster) > 0
+    for: 15m
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: cluster has shards in relocating state
+      description: "{{ $value }} shards are currently relocating in cluster {{ $labels.cluster\
+        \ }}"
+  - alert: ElasticsearchClusterTooManyPendingTasks
+    expr: max(elasticsearch_cluster_health_number_of_pending_tasks) by (cluster) > 8
+    for: 15m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      summary: cluster has many tasks pending
+      description: "{{ $value }} tasks are currently pending in cluster {{ $labels.cluster\
+        \ }}"
+  - alert: ElasticsearchHeapTooHigh
+    expr: elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"} > 0.9
+    for: 15m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      summary: elasticsearch node has too high heap usage
+      description: elasticsearch node {{ $labels.name }} in cluster {{ $labels.cluster
+        }} has heap usage > 90%
+  - alert: ElasticsearchIndicesFielddataMemorySize
+    expr: elasticsearch_indices_fielddata_memory_size_bytes / (1024 * 1024) > 100
+    for: 15m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      summary: elasticsearch fielddata memory is exhausted
+      description: elasticsearch node {{ $labels.name }} in cluster {{ $labels.cluster
+        }} is consuming {{ $value }}MiB fielddata memory

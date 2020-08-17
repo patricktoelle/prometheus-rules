@@ -1,0 +1,43 @@
+groups:
+- name: disk.rules
+  rules:
+  # Only 10 percent disk space left
+  - alert: NodeDiskSpace
+    expr: ((node_filesystem_free_bytes{fstype="ext4"}/node_filesystem_size_bytes)
+      * 100) < 10 or (node_filesystem_free{fstype="ext4"}/node_filesystem_size * 100)
+      < 10
+    for: 5m
+    labels:
+      severity: critical
+      priority: P2
+      paging: true
+    annotations:
+      summary: Disk is getting full at {{ $labels.instance }}
+      description: "{{ $labels.instance }} Disk {{ $labels.mountpoint }} is getting\
+        \ full (current value is: {{ $value }})"
+  # Running out of disk space in 24 hours
+  - alert: NodeDiskSpacePrediction
+    expr: (predict_linear(node_filesystem_free_bytes{fstype="ext4"}[8h], 24*3600)
+      < 0) or (predict_linear(node_filesystem_free{fstype="ext4"}[8h], 24*3600) <
+      0)
+    for: 1h
+    labels:
+      severity: warning
+      priority: P3
+      paging: true
+    annotations:
+      summary: Disk may be full in 24 hours at {{ $labels.instance }}
+      description: "{{ $labels.instance }} Disk {{ $labels.mountpoint }} is getting\
+        \ full (current value is: {{ $value }})"
+  # Inodes are nearly full
+  - alert: HighInodeUsage
+    expr: "((node_filesystem_files_free / node_filesystem_files) * 100) <= 10"
+    for: 5m
+    labels:
+      severity: critical
+      priority: P2
+      paging: true
+    annotations:
+      summary: Inodes are getting full at {{ $labels.instance }}
+      description: "{{ $labels.instance }} Disk {{ $labels.mountpoint }} is running\
+        \ out of inodes (current value is: {{ $value }})"

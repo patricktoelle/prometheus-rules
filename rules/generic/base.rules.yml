@@ -1,0 +1,26 @@
+groups:
+- name: base.rules
+  rules:
+  # Alert is critical all the time. Query alertmanager API and check if its firing to ensure your alerting pipeline works as intended
+  - alert: DeadMansSwitch
+    expr: vector(1)
+    labels:
+      severity: critical
+      priority: P1
+      paging: true
+    annotations:
+      summary: Alerting DeadMansSwitch
+      description: This is a DeadMansSwitch meant to ensure that the entire Alerting
+        pipeline is functional. If not firing, prometheus might have a problem.
+  # Alert that fires once a week during a fixed timeframe to test your alerting pipeline. If there is no alert on monday, you might have a problem
+  - alert: WeeklyTestalert
+    expr: day_of_week() == 1 and hour() == 8 and minute() < 20
+    for: 1m
+    labels:
+      severity: critical
+      priority: P1
+      paging: true
+    annotations:
+      summary: Alerting weekly test alarm
+      description: This alert notification shows that the alerting pipeline is working
+        as intended. Have a nice week!

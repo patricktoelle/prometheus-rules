@@ -1,0 +1,39 @@
+groups:
+- name: restic.rules
+  rules:
+  - alert: ResticBackupFailed
+    expr: restic_backup_state{state="failed"}
+    for: 10m
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: 'Restic backup failed: {{ $labels.path }} on {{ $labels.instance }}'
+      description: "{{ $labels.path }} on {{ $labels.instance }} failed on backup"
+  - alert: ResticBackupDidNotRun
+    expr: time() - restic_backup_state{state="success"} > 48 * 60 * 60
+    for: 10m
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: Restic backup did not run for 2 days
+      description: "{{ $labels.path }} on {{ $labels.instance }} was not backed up\
+        \ for more that 2 days"
+  - alert: ResticBackupNotActive
+    # For this rule you need to have restic backups in place and exporting metrics to textfile collector:
+    # https://gist.github.com/patricktoelle/9d5153228c0f98b71f2f1f0b153625a8
+    #
+    # Otherwise, this check will fail immediately, as there is no data gathered.
+    expr: (count (up{job="node_exporter"}) by (instance) unless count (restic_backup_state)
+      by (instance))
+    for: 10m
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: Restic backup did not deliver any results
+      description: "{{ $labels.instance }} did not deliver any backup results"

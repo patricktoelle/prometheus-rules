@@ -1,0 +1,58 @@
+groups:
+- name: puppet.rules
+  rules:
+  - alert: PuppetReportOld
+    expr: "(time() - puppet_report) / 60 / 60 / 24 > 7"
+    for: 10m
+    labels:
+      severity: warning
+      priority: P5
+      paging: false
+    annotations:
+      summary: No puppet report for 7 days in {{ $labels.instance }}
+      description: Last puppet report was {{ $value }} days ago
+  - alert: PuppetDisabledOrNoReport
+    expr: count (up{job="node_exporter"}) by (certname) unless count (label_join(
+      puppet_report, "certname", ",", "host")) by (certname)
+    for: 10m
+    labels:
+      severity: warning
+      priority: P5
+      paging: false
+    annotations:
+      summary: No puppet reports found for {{ $labels.certname }}
+      description: No puppet reports found for {{ $labels.certname }}. Please check
+        if puppet is disabled or absent.
+  - alert: PuppetRunFailure
+    expr: puppet_report_events{name="Failure"} != 0
+    for: 2h
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: Puppet run has failures
+      description: "{{ $labels.host }} has failures during puppet run, please investigate"
+  - alert: PuppetRunChangesForLongTime
+    expr: puppet_report_changes != 0
+    for: 48h
+    labels:
+      severity: warning
+      priority: P5
+      paging: false
+    annotations:
+      summary: Puppet changes at every run
+      description: "{{ $labels.host }} seem to have a loop or condition, that triggers\
+        \ puppet changes at every run. Please make sure to get puppet into a non-changing\
+        \ state."
+  - alert: PuppetNoopMode
+    expr: puppet_report_events{name="Noop"} > 0
+    for: 3d
+    labels:
+      severity: warning
+      priority: P5
+      paging: false
+    annotations:
+      summary: Puppet runs in noop mode
+      description: "{{ $labels.host }} runs in noop mode. Please try to re-activate\
+        \ puppet."

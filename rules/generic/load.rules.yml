@@ -1,0 +1,15 @@
+groups:
+- name: load-average.rules
+  rules:
+  - alert: NodeLoadAverage
+    expr: ((node_load5 / count without (cpu, mode) (node_cpu{mode="system"})) > 1) \
+      \ or (node_load5 / count without (cpu, mode) (node_cpu_seconds_total{mode="system"})) > 1
+    for: 6h
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      summary: High Load on {{ $labels.instance }} detected
+      description: "{{ $labels.instance }} Average load is above threshold (current\
+        \ value is: {{ $value }})"

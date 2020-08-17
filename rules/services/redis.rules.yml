@@ -1,0 +1,63 @@
+groups:
+- name: redis.rules
+  rules:
+  - alert: RedisDown
+    expr: redis_up == 0
+    for: 10m
+    labels:
+      severity: critical
+      priority: P3
+      paging: false
+    annotations:
+      summary: '{{ $labels.job }} down on {{ $labels.instance }}'
+      description: '{{ $labels.job }} down on {{ $labels.instance }} or cannot scrape'
+  - alert: RedisTooLessSlaves
+    expr: count by (job) (redis_slave_info) == 0
+    for: 10m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      summary: 'Redis cluster has no slaves'
+      description: 'Redis cluster {{ $labels.job }} does not have any slave connected'
+  - alert: RedisMasterLinkDown
+    expr: redis_master_link_up == 0
+    for: 10m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      summary: 'Redis slave cannot access master'
+      description: 'Redis {{ $labels.job }} on {{ $labels.instance }} cannot establish any link to redis master'
+  - alert: RedisReplicationOffset
+    expr: stddev by (job) (redis_master_repl_offset) > 10 * 1024 * 1024    # 10 MB
+    for: 10m
+    labels:
+      severity: warning
+      priority: P3
+      paging: false
+    annotations:
+      summary: 'Redis replication stucks'
+      description: 'Redis {{ $labels.job }} replication offset is too high'
+  - alert: RedisSentinelNoMaster
+    expr: redis_sentinel_master_status != 1
+    for: 10m
+    labels:
+      severity: critical
+      priority: P2
+      paging: true
+    annotations:
+      summary: 'Redis Sentinel has no master connected'
+      description: 'Redis Sentinel has no master for {{ $labels.name }}'
+  - alert: RedisSentinelNoQuorum
+    expr: redis_sentinel_master_sentinels < 3
+    for: 10m
+    labels:
+      severity: critical
+      priority: P2
+      paging: false
+    annotations:
+      summary: 'Redis Sentinel has no quorum'
+      description: 'Redis Sentinel has no quorum for {{ $labels.name }}'

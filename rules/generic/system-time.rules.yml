@@ -1,0 +1,25 @@
+groups:
+- name: system-time.rules
+  rules:
+  - alert: NodeTimeDiffersFromPrometheus
+    expr: time() - node_time > 60 or time() - node_time_seconds > 60
+    for: 10m
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: Node time on {{ $labels.instance }} differs from prometheus
+      description: "{{ $labels.instance }} System-time of node differs from prometheus\
+        \ server by {{ $value }} seconds"
+  - alert: NodeTimeDiffersFromTimeserver
+    expr: node_ntp_offset_seconds > 5
+    for: 10m
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: Node time on {{ $labels.instance }} differs from time servers
+      description: "{{ $labels.instance }} System-time of node differs from time servers\
+        \ by {{ $value }} seconds"

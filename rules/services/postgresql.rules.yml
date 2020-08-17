@@ -1,0 +1,72 @@
+  - name: postgresql.rules
+    rules:
+      - alert: 'PostgresUp'
+        expr: 'pg_up == 0'
+        for: '15m'
+        labels:
+          severity: critical
+          priority: P3
+          paging: true
+        annotations:
+          'summary': 'PostgreSQL down at {{ $labels.instance }}'
+          'description': '{{ $labels.instance }} PostgreSQL down or cannot be scraped.'
+      - alert: 'PostgresNonWorkingReplication'
+        expr: 'absent(pg_stat_replication_pg_xlog_location_diff)'
+        for: '15m'
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          'summary': 'PostgreSQL replication not working'
+          'description': 'pg_stat_replication_pg_xlog_location_diff has no datapoints, perhaps our replication is broken'
+      - alert: 'PostgresLowFreeConnections'
+        expr: 100 * sum by (instance) (pg_stat_activity_count) / sum by (instance) (pg_settings_max_connections) > 80
+        for: '10m'
+        labels:
+          severity: critical
+          priority: P2
+          paging: true
+        annotations:
+          'summary': 'PostgreSQL is running out of connections'
+          'description': '{{ $labels.instance }} is running out of connections ({{ $value }}% conns used) '
+      - alert: PostgresDumpsTooOld3h
+        expr: (((time() - postgresql_dump_date) / (60 * 60)) - 1 > 3) or (((time() - postgresql_dump_date) / (60 * 60)) - 1 > 36)
+        for: 1h
+        labels:
+          severity: warning
+          priority: P4
+          paging: false
+        annotations:
+          summary: PostgreSQL dumps are older than three hours
+          description: 'Dumps of database {{ $labels.database }} are {{ $value }} hours old'
+      - alert: PostgresDumpsTooOld3d
+        expr: (time() - postgresql_dump_date) / ( 60 * 60 * 24) > 3
+        for: 3h
+        labels:
+          severity: critical
+          priority: P3
+          paging: true
+        annotations:
+          summary: PostgreSQL dumps are older than three days
+          description: 'Dumps of database {{ $labels.database }} are {{ $value }} days old'
+      - alert: PostgresDumpsNotMonitored
+        expr: (absent(postgresql_dump_date)) == 1
+        for: 3h
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: PostgreSQL dumps are not monitored properly
+          description: 'No metric found for postgresql_dump_date'
+      - alert: PostgresBasebackupTooOld
+        expr: (time() - max(pg_walg_basebackup)) / (60 * 60 * 24) > 10
+        for: 3h
+        labels:
+          severity: critical
+          priority: P3
+          paging: true
+        annotations:
+          summary: PostgreSQL basebackups are too old
+          description: '{{ $labels.instance }} did last basebackup {{ $value }} days ago'

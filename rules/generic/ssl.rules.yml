@@ -1,0 +1,34 @@
+groups:
+- name: ssl.rules
+  rules:
+  - alert: SSLCertExpiringSoon
+    expr: (probe_ssl_earliest_cert_expiry{job="blackbox"} - time()) / 86400 < 14
+    for: 3h
+    labels:
+      severity: warning
+      priority: P4
+      paging: false
+    annotations:
+      summary: SSL cert of {{ $labels.instance }} expiring soon
+      description: SSL cert of {{ $labels.instance }} expiring in {{ $value }} days
+  - alert: SSLCertExpiringNow
+    expr: (probe_ssl_earliest_cert_expiry{job="blackbox"} - time()) / 86400 < 3
+    for: 3h
+    labels:
+      severity: critical
+      priority: P2
+      paging: true
+    annotations:
+      summary: SSL cert of {{ $labels.instance }} expiring now
+      description: SSL cert of {{ $labels.instance }} expiring in {{ $value }} days
+  - alert: SSLNotWorking
+    expr: probe_http_ssl == 0
+    for: 10m
+    labels:
+      severity: critical
+      priority: P1
+      paging: true
+    annotations:
+      summary: SSL not working on {{ $labels.instance }}
+      description: SSL is not working correctly at {{ $labels.instance }}. Please
+        have a look, if ssl cert was issued correctly.
