@@ -56,6 +56,22 @@ rule_files:
 - "/usr/local/prometheus-rules/special/restic.rules"
 ```
 
+## Exporters
+
+This rules are compatible with following exporters:
+
+* [node exporter](https://github.com/prometheus/node_exporter)
+* [blackbox exporter](https://github.com/prometheus/blackbox_exporter)
+* [postgresql](https://github.com/wrouesnel/postgres_exporter)
+* [mysql](https://github.com/prometheus/mysqld_exporter)
+* [redis](https://github.com/oliver006/redis_exporter)
+* [rabbitmq](https://github.com/kbudde/rabbitmq_exporter)
+* [nginx](https://github.com/hnlq715/nginx-vts-exporter)
+* [haproxy](https://github.com/prometheus/haproxy_exporter)
+
+### directly exposed
+
+* [docker](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-metrics)
 
 ## Testing
 
