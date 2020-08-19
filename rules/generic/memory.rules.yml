@@ -1,16 +1,32 @@
 groups:
-- name: memory.rules
-  rules:
-  - alert: NodeMemUsage
-    expr: "(((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Cached_bytes)\
-      \ / (node_memory_MemTotal_bytes) * 100)) > 90 or (((node_memory_MemTotal - node_memory_MemFree\
-      \ - node_memory_Cached) / (node_memory_MemTotal) * 100)) > 90"
-    for: 30m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      summary: Memory is getting full at {{ $labels.instance }}
-      description: "{{ $labels.instance }} Memory usage is above threshold (current\
-        \ value is: {{ $value }})"
+  - name: memory.rules
+    rules:
+      - alert: NodeMemUsage
+        expr: >-
+          (
+            (
+              ( node_memory_MemTotal_bytes -
+                node_memory_MemFree_bytes -
+                node_memory_Cached_bytes
+              )
+          /
+            (node_memory_MemTotal_bytes) * 100)) > 90
+          or
+          (
+            (
+              (
+                node_memory_MemTotal -
+                node_memory_MemFree -
+                node_memory_Cached
+              )
+            / (node_memory_MemTotal) * 100)) > 90
+        for: 30m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: Memory is getting full at {{ $labels.instance }}
+          description: >-
+            {{ $labels.instance }} Memory usage is above threshold
+            (current value is: {{ $value }})

@@ -1,44 +1,57 @@
 groups:
-- name: haproxy.rules
-  rules:
-  - alert: HaproxyLowFreeSessions
-    expr: haproxy_backend_limit_sessions - haproxy_backend_current_sessions < 50
-    for: 10m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      summary: HAProxy has low free sessions
-      description: "{{ $labels.backend }} on {{ $labels.instance }} has {{ $value\
-        \ }} sessions left."
-  - alert: HaproxyHigh5xx
-    expr: 100 * sum by (host) (rate(haproxy_frontend_http_responses_total{code="5xx"}[5m]) /  sum by (host) (rate(haproxy_frontend_http_responses_total[5m])) > 10
-    for: 10m
-    labels:
-      severity: critical
-      priority: P2
-      paging: true
-    annotations:
-      summary: Haproxy on {{ $labels.instance }} is serving many 5xx errors
-      description: "{{ $labels.frontend }} on {{ $labels.instance }} is responding with code 5xx on {{ value }}% of requests"
-  - alert: HaproxyHigh4xx
-    expr: 100 * sum by (host) (rate(haproxy_frontend_http_responses_total{code="4xx"}[5m]) /  sum by (host) (rate(haproxy_frontend_http_responses_total[5m])) > 20
-    for: 10m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      summary: Haproxy on {{ $labels.instance }} is serving many 4xx errors
-      description: "{{ $labels.frontend }} on {{ $labels.instance }} is responding with code 4xx on {{ value }}% of requests"
-  - alert: HaproxyBackendDown
-    expr: haproxy_backend_up == 0
-    for: 10m
-    labels:
-      severity: critical
-      priority: P2
-      paging: true
-    annotations:
-      summary: Loadbalancer Backend down
-      description: "{{ $labels.backend }} on {{ $labels.instance }} is down"
+  - name: haproxy.rules
+    rules:
+      - alert: HaproxyLowFreeSessions
+        expr: >-
+          haproxy_backend_limit_sessions - haproxy_backend_current_sessions < 50
+        for: 10m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: HAProxy has low free sessions
+          description: >-
+            {{ $labels.backend }} on {{ $labels.instance }}
+            has {{ $value }} sessions left.
+      - alert: HaproxyHigh5xx
+        expr: >-
+          100 * sum by (host)
+          (rate(haproxy_frontend_http_responses_total{code="5xx"}[5m])) /
+          sum by (host) (rate(haproxy_frontend_http_responses_total[5m])) > 10
+        for: 10m
+        labels:
+          severity: critical
+          priority: P2
+          paging: true
+        annotations:
+          summary: Haproxy on {{ $labels.instance }} is serving many 5xx errors
+          description: >-
+            {{ $labels.frontend }} on {{ $labels.instance }} is responding with
+            code 5xx on {{ value }}% of requests
+      - alert: HaproxyHigh4xx
+        expr: >-
+          100 * sum by (host)
+          (rate(haproxy_frontend_http_responses_total{code="4xx"}[5m])) /
+          sum by (host) (rate(haproxy_frontend_http_responses_total[5m])) > 20
+        for: 10m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: Haproxy on {{ $labels.instance }} is serving many 4xx errors
+          description: >-
+            {{ $labels.frontend }} on {{ $labels.instance }} is responding with
+            code 4xx on {{ value }}% of requests
+      - alert: HaproxyBackendDown
+        expr: haproxy_backend_up == 0
+        for: 10m
+        labels:
+          severity: critical
+          priority: P2
+          paging: true
+        annotations:
+          summary: Loadbalancer Backend down
+          description: >-
+            {{ $labels.backend }} on {{ $labels.instance }} is down

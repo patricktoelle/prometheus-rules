@@ -1,51 +1,65 @@
 groups:
-- name: systemd.rules
-  rules:
-  - alert: SystemdUnitFailed
-    expr: node_systemd_unit_state{state="failed"} == 1
-    for: 10m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-      service: "{{ $labels.name }}"
-    annotations:
-      summary: Systemd unit {{ $labels.name }} failed
-      description: "{{ $labels.instance }} Systemd unit {{ $labels.name }} failed\
-        \ to execute"
-  - alert: SystemdInactiveTimers
-    expr: node_systemd_unit_state{name=~ ".*timer", state="inactive", name!="systemd-readahead-done.timer"}
-      == 1
-    for: 10m
-    labels:
-      severity: warning
-      priority: P4
-      paging: false
-      service: "{{ $labels.name }}"
-    annotations:
-      summary: There are inactive systemd timers on {{ $labels.instance }}
-      description: "{{ $labels.instance }} Systemd timer {{ $labels.name }} is inactive,\
-        \ please have a check"
-  - alert: SystemdSystemRunning
-    expr: node_systemd_system_running == 0
-    for: 10m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      summary: Systemd reports degraded system on {{ $labels.instance }}
-      description: "{{ $labels.instance }} System is degraded, please have a check\
-        \ at systemd"
-  - alert: SystemdTimerNotExecuted
-    expr: (time() - node_systemd_timer_last_trigger_seconds{name!="systemd-readahead-done.timer"})
-      / 60 / 60 / 24 > 3
-    for: 10m
-    labels:
-      severity: warning
-      priority: P4
-      paging: false
-    annotations:
-      summary: Systemd timer {{ $labels.name }} did not run for {{ $value }} days
-      description: "{{ $labels.instance }}, Timer {{ $labels.name }} did not run for\
-        \ {{ $value }} days"
+  - name: systemd.rules
+    rules:
+      - alert: SystemdUnitFailed
+        expr: node_systemd_unit_state{state="failed"} == 1
+        for: 10m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+          service: "{{ $labels.name }}"
+        annotations:
+          summary: Systemd unit {{ $labels.name }} failed
+          description: >-
+            {{ $labels.instance }} Systemd unit {{ $labels.name }} failed
+            to execute
+      - alert: SystemdInactiveTimers
+        expr: >-
+          node_systemd_unit_state
+            {name=~ ".*timer",
+             state="inactive",
+             name!="systemd-readahead-done.timer"
+            }
+          == 1
+        for: 10m
+        labels:
+          severity: warning
+          priority: P4
+          paging: false
+          service: "{{ $labels.name }}"
+        annotations:
+          summary: There are inactive systemd timers on {{ $labels.instance }}
+          description: >-
+            {{ $labels.instance }} Systemd timer {{ $labels.name }} is
+            inactive, please have a check
+      - alert: SystemdSystemRunning
+        expr: node_systemd_system_running == 0
+        for: 10m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: Systemd reports degraded system on {{ $labels.instance }}
+          description: >-
+            {{ $labels.instance }} System is degraded, please have a check
+            at systemd
+      - alert: SystemdTimerNotExecuted
+        expr: >-
+          (time() -
+          node_systemd_timer_last_trigger_seconds
+            {name!="systemd-readahead-done.timer"}
+          )
+          / 60 / 60 / 24 > 3
+        for: 10m
+        labels:
+          severity: warning
+          priority: P4
+          paging: false
+        annotations:
+          summary: >-
+            Systemd timer {{ $labels.name }} did not run for {{ $value }} days
+          description: >-
+            {{ $labels.instance }}, Timer {{ $labels.name }} did not run for
+            {{ $value }} days

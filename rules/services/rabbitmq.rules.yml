@@ -1,34 +1,38 @@
 groups:
-- name: rabbitmq.rules
-  rules:
-  - alert: RabbitmqDown
-    expr: rabbitmq_up == 0
-    for: 10m
-    labels:
-      severity: critical
-      priority: P3
-      paging: true
-    annotations:
-      summary: 'RabbitMQ is down: {{ $labels.job }} on {{ $labels.instance }}'
-      description: "{{ $labels.job }} on {{ $labels.instance }} is not reachable"
-  - alert: RabbitmqPartitions
-    expr: rabbitmq_partitions == 1
-    for: 10m
-    labels:
-      severity: critical
-      priority: P3
-      paging: true
-    annotations:
-      summary: RabbitMQ is has network partitions
-      description: "{{ $labels.instance }} cannot see {{ $labels.node }}"
-  - alert: RabbitmqQueueMessages
-    expr: rabbitmq_queue_messages > 10
-    for: 2h
-    labels:
-      severity: critical
-      priority: P2
-      paging: true
-    annotations:
-      summary: RabbitMQ queues are not empty
-      description: "{{ $labels.instance }} has {{ $value }} messages in queue {{ $labels.queue\
-        \ }}"
+  - name: rabbitmq.rules
+    rules:
+      - alert: RabbitmqDown
+        expr: rabbitmq_up == 0
+        for: 10m
+        labels:
+          severity: critical
+          priority: P3
+          paging: true
+        annotations:
+          summary: >-
+            RabbitMQ is down: {{ $labels.job }} on {{ $labels.instance }}
+          description: >-
+            {{ $labels.job }} on {{ $labels.instance }} is not reachable
+      - alert: RabbitmqPartitions
+        expr: rabbitmq_partitions == 1
+        for: 10m
+        labels:
+          severity: critical
+          priority: P3
+          paging: true
+        annotations:
+          summary: RabbitMQ is has network partitions
+          description: >-
+            {{ $labels.instance }} cannot see {{ $labels.node }}
+      - alert: RabbitmqQueueMessages
+        expr: rabbitmq_queue_messages > 10
+        for: 2h
+        labels:
+          severity: critical
+          priority: P2
+          paging: true
+        annotations:
+          summary: RabbitMQ queues are not empty
+          description: >-
+            {{ $labels.instance }} has {{ $value }} messages in queue
+            {{ $labels.queue }}

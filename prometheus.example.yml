@@ -5,12 +5,12 @@ global:
   external_labels:
     monitor: master
 rule_files:
-- "./rules/*/*.rules.yml"
+  - "./rules/*/*.rules.yml"
 alerting:
   alert_relabel_configs: []
   alertmanagers:
-  - static_configs:
-    - targets:
-      - localhost:9093
+    - static_configs:
+        - targets:
+            - localhost:9093
 remote_read: []
 remote_write: []

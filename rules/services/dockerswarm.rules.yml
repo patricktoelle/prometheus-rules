@@ -1,53 +1,84 @@
 groups:
-- name: docker-swarm.rules
-  rules:
-  - alert: 'DockerSwarmHealthchecksFailed'
-    expr: 'rate(engine_daemon_health_checks_failed_total[1m]) > 0'
-    for: '15m'
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      'summary': 'Docker Swarm service healthchecks failing at {{ $labels.instance }}'
-      'description': '{{ $labels.instance }} Docker Swarm service healthchecks failing'
-  - alert: DockerSwarmTaskHighCPUUsage
-    expr: 'sum(rate(container_cpu_usage_seconds_total{container_label_com_docker_swarm_task_name=~".+"}[1m])) BY (container_label_com_docker_swarm_task_name, container_label_com_docker_swarm_node_id) * 100 > 100'
-    for: 15m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      'description': '{{ $labels.container_label_com_docker_swarm_task_name }} on {{ $labels.container_label_com_docker_swarm_node_id }} CPU usage is at {{ humanize $value}}%.'
-      'summary': 'CPU alert for Swarm task {{ $labels.container_label_com_docker_swarm_task_name }} on {{ $labels.container_label_com_docker_swarm_node_id }}'
-  - alert: DockerSwarmTaskHighMemUsage
-    expr: 'sum(container_memory_rss{container_label_com_docker_swarm_task_name=~".+"}) BY (container_label_com_docker_swarm_task_name, container_label_com_docker_swarm_node_id) > 4e+09'
-    for: 15m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      'description': '{{ $labels.container_label_com_docker_swarm_task_name }} on {{ $labels.container_label_com_docker_swarm_node_id }} memory usage is {{ humanize $value}}.'
-      'summary': 'Memory alert for Swarm task {{ $labels.container_label_com_docker_swarm_task_name }} on {{ $labels.container_label_com_docker_swarm_node_id }}'
-  - alert: DockerSwarmNodeFailure
-    expr: max(swarm_manager_nodes{state=~"(disconnected|down|unknown)"}) > 0
-    for: 15m
-    labels:
-      severity: critical
-      priority: P2
-      paging: true
-    annotations:
-      summary: 'Docker swarm is missing {{ $value }} node(s)'
-      description: '{{ $value }} nodes are missing from docker swarm, please have a look.'
-  - alert: DockerSwarmOverlayNetworkInterfaceBroken
-    expr: node_network_up{interface=~"vx-.*"} == 0
-    for: 15m
-    labels:
-      severity: critical
-      priority: P2
-      paging: true
-    annotations:
-      summary: 'Docker swarm overlay network broken'
-      description: 'Interface {{ $labels.interface }} on {{ $labels.instance }} is broken, please delete to get overlay network back to work.'
+  - name: docker-swarm.rules
+    rules:
+      - alert: DockerSwarmHealthchecksFailed
+        expr: rate(engine_daemon_health_checks_failed_total[1m]) > 0
+        for: 15m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: >-
+            Docker Swarm service healthchecks failing at {{ $labels.instance }}
+          description: >-
+            {{ $labels.instance }} Docker Swarm service healthchecks failing
+      - alert: DockerSwarmTaskHighCPUUsage
+        expr: >-
+          sum(
+            rate(
+              container_cpu_usage_seconds_total
+                {container_label_com_docker_swarm_task_name=~".+"}[1m]
+              )
+            ) BY (
+              container_label_com_docker_swarm_task_name,
+              container_label_com_docker_swarm_node_id
+            )
+          * 100 > 100
+        for: 15m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          description: >-
+            {{ $labels.container_label_com_docker_swarm_task_name }} on
+            {{ $labels.container_label_com_docker_swarm_node_id }} CPU
+            usage is at {{ humanize $value}}%.
+          summary: >-
+            CPU alert for Swarm task
+            {{ $labels.container_label_com_docker_swarm_task_name }} on
+            {{ $labels.container_label_com_docker_swarm_node_id }}
+      - alert: DockerSwarmTaskHighMemUsage
+        expr: >-
+          sum(container_memory_rss{container_label_com_docker_swarm_task_name=~".+"})
+          BY (container_label_com_docker_swarm_task_name,
+          container_label_com_docker_swarm_node_id) > 4e+09
+        for: 15m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          description: >-
+            {{ $labels.container_label_com_docker_swarm_task_name }} on
+            {{ $labels.container_label_com_docker_swarm_node_id }}
+            memory usage is {{ humanize $value}}.
+          summary: >-
+            Memory alert for Swarm task
+            {{ $labels.container_label_com_docker_swarm_task_name }} on
+            {{ $labels.container_label_com_docker_swarm_node_id }}
+      - alert: DockerSwarmNodeFailure
+        expr: max(swarm_manager_nodes{state=~"(disconnected|down|unknown)"}) > 0
+        for: 15m
+        labels:
+          severity: critical
+          priority: P2
+          paging: true
+        annotations:
+          summary: Docker swarm is missing {{ $value }} node(s)
+          description: >-
+            {{ $value }} nodes are missing from docker swarm,
+            please have a look.
+      - alert: DockerSwarmOverlayNetworkInterfaceBroken
+        expr: node_network_up{interface=~"vx-.*"} == 0
+        for: 15m
+        labels:
+          severity: critical
+          priority: P2
+          paging: true
+        annotations:
+          summary: Docker swarm overlay network broken
+          description: >-
+            Interface {{ $labels.interface }} on {{ $labels.instance }}
+            is broken, please delete to get overlay network back to work.

@@ -1,23 +1,38 @@
 groups:
-- name: nginx.rules
-  rules:
-  - alert: 'NginxHTTPHigh4xx'
-    expr: '100 * sum by (host) (rate(nginx_vts_server_requests_total{code="4xx"}[5m])) /  sum by (host) (rate(nginx_vts_server_requests_total[5m])) > 20'
-    for: '1h'
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      'summary': 'High count of HTTP 4xx requests at  {{ $labels.host }}'
-      'description': 'Nginx vhost {{ $labels.host }}: High count of HTTP 4xx requests (currently {{ $value }}% of all requests affected)'
-  - alert: 'NginxHTTPHigh5xx'
-    expr: '100 * sum by (host) (rate(nginx_vts_server_requests_total{code="5xx"}[5m])) /  sum by (host) (rate(nginx_vts_server_requests_total[5m])) > 20'
-    for: '1h'
-    labels:
-      severity: critical
-      priority: P2
-      paging: true
-    annotations:
-      'summary': 'High count of HTTP 5xx requests at  {{ $labels.host }}'
-      'description': 'Nginx vhost {{ $labels.host }}: High count of HTTP 5xx requests (currently {{ $value }}% of all requests affected)'
+  - name: nginx.rules
+    rules:
+      - alert: NginxHTTPHigh4xx
+        expr: >-
+          100 * sum by (host)
+          (rate(nginx_vts_server_requests_total{code="4xx"}[5m])) /
+          sum by (host) (rate(nginx_vts_server_requests_total[5m]))
+          > 20
+        for: 1h
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: High count of HTTP 4xx requests at {{ $labels.host }}
+          description: >-
+            Nginx vhost {{ $labels.host }}:
+            High count of HTTP 4xx requests
+            (currently {{ $value }}% of all requests affected)
+      - alert: NginxHTTPHigh5xx
+        expr: >-
+          100 * sum by (host)
+          (rate(nginx_vts_server_requests_total{code="5xx"}[5m])) /
+          sum by (host) (rate(nginx_vts_server_requests_total[5m]))
+          > 20
+        for: 1h
+        labels:
+          severity: critical
+          priority: P2
+          paging: true
+        annotations:
+          summary: >-
+            High count of HTTP 5xx requests at {{ $labels.host }}
+          description: >-
+            Nginx vhost {{ $labels.host }}:
+            High count of HTTP 5xx requests
+            (currently {{ $value }}% of all requests affected)

@@ -1,0 +1,14 @@
+language: minimal
+
+before_install:
+  - wget -O /tmp/prometheus.tgz https://github.com/prometheus/prometheus/releases/download/v2.20.1/prometheus-2.20.1.linux-amd64.tar.gz
+  - tar -xzf /tmp/prometheus.tgz -C /tmp/ --strip-components=1 prometheus-2.20.1.linux-amd64/promtool
+
+install:
+  - pip install --user yamllint
+  - find .
+
+script:
+  - yamllint rules/ --no-warnings
+  - find rules/ -name '*.rules.yml' | xargs /tmp/promtool check rules
+  - find tests/ -name '*.test.yml' | xargs /tmp/promtool test rules

@@ -1,33 +1,36 @@
 groups:
-- name: softwareraid.rules
-  rules:
-  - alert: 'SoftwareRaidUnusedDisks'
-    expr: 'node_md_disks - node_md_disks_active != 0'
-    for: 30m
-    labels:
-      severity: warning
-      priority: P4
-      paging: false
-    annotations:
-      'summary': 'Software Raid has unused disks'
-      'description': '{{ $labels.instance }} has a broken or unused software raid disk'
-  - alert: 'SoftwareRaidUnsyncedBlocks'
-    expr: 'node_md_blocks - node_md_blocks_synced > 10'
-    for: 30m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      'summary': 'Software Raid has unsynced blocks'
-      'description': '{{ $labels.instance }} has unsynced blocks'
-  - alert: 'SoftwareRaidUNotActive'
-    expr: 'node_md_is_active == 0'
-    for: 30m
-    labels:
-      severity: warning
-      priority: P3
-      paging: false
-    annotations:
-      'summary': 'Software Raid is not active'
-      'description': '{{ $labels.instance }} has a non-active software raid'
+  - name: softwareraid.rules
+    rules:
+      - alert: SoftwareRaidUnusedDisks
+        expr: node_md_disks - node_md_disks_active != 0
+        for: 30m
+        labels:
+          severity: warning
+          priority: P4
+          paging: false
+        annotations:
+          summary: Software Raid has unused disks
+          description: >-
+            {{ $labels.instance }} has a broken or unused software raid disk
+      - alert: SoftwareRaidUnsyncedBlocks
+        expr: node_md_blocks - node_md_blocks_synced > 10
+        for: 30m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: Software Raid has unsynced blocks
+          description: >-
+            {{ $labels.instance }} has unsynced blocks
+      - alert: SoftwareRaidUNotActive
+        expr: node_md_is_active == 0
+        for: 30m
+        labels:
+          severity: warning
+          priority: P3
+          paging: false
+        annotations:
+          summary: Software Raid is not active
+          description: >-
+            {{ $labels.instance }} has a non-active software raid
